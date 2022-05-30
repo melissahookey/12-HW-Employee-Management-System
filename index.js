@@ -1,7 +1,7 @@
 require('dotenv').config();
-const inquirer = require('inquirer'); // https://www.npmjs.com/package/inquirer
-const mysql = require('mysql2'); // https://www.npmjs.com/package/mysql2 
-const cTable = require('console.table'); // https://www.npmjs.com/package/console.table
+const inquirer = require('inquirer'); 
+const mysql = require('mysql2');
+const cTable = require('console.table'); 
 
 
 const db = mysql.createConnection(
@@ -17,7 +17,7 @@ const menuOptions = [
     {
         type: 'list',
         name: 'userChoice',
-        message: 'Please choose from the following menu options…',        
+        message: 'Choose from the following menu options…',        
         choices: ['View all departments', 
         'View all roles', 
         'View all employees', 
@@ -25,16 +25,10 @@ const menuOptions = [
         'Add a role', 
         'Add an employee', 
         'Update an employee role',
-        'Update employee manager',
-        "View employees by manager",
-        "View employees by department",
-        'Delete department',
-        'Delete a role',
-        'Delete an employee',
         'Exit']
     }
 ]  
-// view all departments  
+  
 viewAllDepartments = () => {      
     const fetchQuery = `SELECT id, name from department ORDER BY id`;
     db.query(fetchQuery, (err, result) => {
@@ -46,7 +40,7 @@ viewAllDepartments = () => {
         }            
     })   
 }
-// view all employees  
+
 viewAllEmployees = () => {
      const fetchQuery = `SELECT employee.id,employee.first_name,employee.last_name,
      manager.first_name as manager_first_name,manager.last_name as manager_last_name,
@@ -65,7 +59,7 @@ viewAllEmployees = () => {
      })   
  }
 
-// view all roles  
+ 
 viewAllRoles = () => {
      const fetchQuery = `SELECT roles.id, roles.title, roles.salary, department.name as department 
      FROM roles 
@@ -79,7 +73,7 @@ viewAllRoles = () => {
          }            
      })   
  }
- // add new department
+
  addDepartment = () => {
     inquirer.prompt([
     {
@@ -121,7 +115,7 @@ viewAllRoles = () => {
       }) 
     })  
  }
- // add new role
+ 
  addRole = () => {
     inquirer.prompt([
     {
@@ -195,7 +189,7 @@ inquirer.prompt([
       }) 
     })  
  }
-  // add new employee
+
   addEmployee = () => {
    inquirer.prompt([
    {        
@@ -275,7 +269,7 @@ inquirer.prompt([
  })  
 }) 
 }
-// Update the employee's role
+
 updateEmployeeRole = () => {
      
     const fetchEmployee = `SELECT id, first_name, last_name from employee order by first_name, last_name`;
@@ -323,171 +317,8 @@ updateEmployeeRole = () => {
         }
     })         
 }
-// Update manager
-updateEmployeeManager = () => {     
-    const fetchEmployee = `SELECT id, first_name, last_name from employee order by first_name, last_name`;
-    db.query(fetchEmployee, (err, result) => {        
-        if (err) throw err;   
-        else
-        {
-            const listOfEmployee = result.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
-            inquirer.prompt([
-                {
-                    type: 'list', 
-                    name: 'employeeId',
-                    message: 'Select employee would you like to update?',        
-                    choices: listOfEmployee
-                }
-                ]).then((employee) => {
-                    const employeeId = employee.employeeId;
-                    const fetchManager = `SELECT id, first_name, last_name from employee order by first_name, last_name`;
-                    db.query(fetchManager, (err, result) => {        
-                        if (err) throw err;   
-                        else
-                        {
-                         const listOfManager = result.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
-                         inquirer.prompt([
-                         {
-                             type: 'list', 
-                             name: 'managerId',
-                             message: 'Who is employee\'s new manager?',        
-                             choices: listOfManager
-                         }
-                         ]).then((manager) => {
-                         const managerId = manager.managerId;
-                         const updateQuery = `UPDATE employee SET manager_id=? where id=?`;
-                         db.query(updateQuery, [managerId, employeeId], (err, result) => {
-                             if (err) throw err;   
-                             else {
-                                 console.log(`Employee manager has been updated`);   
-                                 viewAllEmployees();  
-                             }
-                         })
-                        })
-                        } 
-                })  
-            })  
-        }
-    })         
-}
-//  list of employees by manager
-viewEmployeeByManager = () => {    
-    const fetchQuery = `SELECT e.first_name, e.last_name, m.first_name as manager_first_name, m.last_name as manager_last_name from 
-    employee e JOIN employee m 
-    ON e.manager_id=m.id`;
-    db.query(fetchQuery, (err, result) => {
-        if (err) throw err;   
-        else
-        {
-            console.table(result);
-            startApplication();           
-        }            
-    })   
-}
-//   list of employees by department
-viewEmployeeByDepartment = () => {    
-    const fetchQuery = `SELECT employee.first_name, employee.last_name, department.name as department 
-    FROM employee JOIN 
-    roles ON employee.role_id = roles.id JOIN 
-    department ON roles.department_id = department.id`;
-    db.query(fetchQuery, (err, result) => {
-        if (err) throw err;   
-        else
-        {
-            console.table(result);
-            startApplication();           
-        }            
-    })   
-}
-// delete department
-deleteDepartment = () => {    
-        const fetchDepartments = `SELECT id, name from department order by name`;
-        db.query(fetchDepartments, (err, result) => {        
-        if (err) throw err;   
-        else
-        {
-        const listOfDepartments = result.map(({ name, id }) => ({ name: name, value: id }));
-        inquirer.prompt([
-            {
-                type: 'list', 
-                name: 'departmentId',
-                message: "Choose department to delete:",
-                choices: listOfDepartments
-            }
-            ]).then((department) => {
-                  const departmentId = department.departmentId;
-                  const deleteQuery = `DELETE FROM department where id=?`;
-                       db.query(deleteQuery, departmentId, (err, result) => {
-                           if (err) throw err;   
-                           else {
-                               console.log(`Selected department has been deleted`);   
-                               viewAllDepartments();  
-                           }                  
-              })  
-          })  
-      }
-  })         
-}
-// delete role
-deleteRole = () => {     
-        const fetchRoles = `SELECT id, title from roles order by title`;
-        db.query(fetchRoles, (err, result) => {        
-        if (err) throw err;   
-        else
-        {
-            const listOfRoles = result.map(({ title, id }) => ({ name: title, value: id }));
-            inquirer.prompt([
-            {
-                type: 'list', 
-                name: 'roleId',
-                message: "Choose role to delete:",
-                choices: listOfRoles
-            }
-            ]).then((roles) => {
-            const roleId = roles.roleId;
-            const deleteQuery = `DELETE FROM role where id=?`;
-            db.query(deleteQuery, roleId, (err, result) => {
-                if (err) throw err;   
-                else {
-                    console.log(`Selected role has been deleted`);   
-                    viewAllRoles();  
-                }                  
-                })  
-            })  
-        }
-    })         
-  }
-//delete employee
-deleteEmployee = () => {     
-    const fetchEmployee = `SELECT id, first_name, last_name from employee order by first_name, last_name`;
-    db.query(fetchEmployee, (err, result) => {        
-    if (err) throw err;   
-    else
-    {
-        const listOfEmployee = result.map(({ id, first_name, last_name }) => ({ name: first_name + " "+ last_name, value: id }));
-        inquirer.prompt([
-        {
-            type: 'list', 
-            name: 'employeeId',
-            message: "Choose employee to delete:",
-            choices: listOfEmployee
-        }
-        ]).then((employee) => {
-        const employeeId = employee.employeeId;
-        const deleteQuery = `DELETE FROM employee where id=?`;
-        db.query(deleteQuery, employeeId, (err, result) => {
-            if (err) throw err;   
-            else {
-                console.log(`Selected employee has been deleted`);   
-                viewAllEmployees();  
-            }                  
-            })  
-        })  
-    }
-})         
-}  
 
-// Show choices
+
 const startApplication = () => {    
     inquirer.prompt(menuOptions)
     .then((answers) => {
@@ -546,13 +377,9 @@ const startApplication = () => {
     })
     .catch((err) => console.error(err));  
 }
-// initialize
+
 function init() {
-  console.log("***********************************")
-  console.log("*                                 *")
   console.log("*        EMPLOYEE MANAGER         *")
-  console.log("*                                 *")
-  console.log("***********************************")
   startApplication();
 }
 
