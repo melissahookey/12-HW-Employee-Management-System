@@ -4,11 +4,11 @@ const cTable = require('console.table');
 
 const db = mysql.createConnection(
     {
-      host: '127.0.0.1',
+      host: 'localhost',
       user: 'root',
       password: 'oatmeal1',
       database: 'company_db',
-      port: 3307
+      port: 3306
     }
   );
 
