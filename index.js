@@ -41,13 +41,13 @@ viewAllDepartments = () => {
 }
 
 viewAllEmployees = () => {
-     const fetchQuery = `SELECT employee.id,employee.first_name,employee.last_name,
+     const fetchQuery = `SELECT employees.id,employees.first_name,employees.last_name,
      manager.first_name as manager_first_name,manager.last_name as manager_last_name,
-     roles.title,roles.salary,department.name as department 
-     FROM employee employee 
-     LEFT JOIN employee manager on employee.manager_id = manager.id  
-     JOIN ROLES on employee.roles_id = roles.id 
-     JOIN department ON roles.department_id = department.id;`;
+     role.title,role.salary,department.name as department 
+     FROM employees employees
+     LEFT JOIN employees manager on employees.manager_id = manager.id  
+     JOIN ROLE on employees.role_id = role.id 
+     JOIN department ON role.department_id = department.id;`;
      db.query(fetchQuery, (err, result) => {
          if (err) throw err;   
          else
@@ -60,9 +60,9 @@ viewAllEmployees = () => {
 
  
 viewAllRoles = () => {
-     const fetchQuery = `SELECT roles.id, roles.title, roles.salary, department.name as department 
-     FROM roles 
-     JOIN department ON roles.department_id = department.id`;
+     const fetchQuery = `SELECT role.id, role.title, role.salary, department.name as department 
+     FROM role 
+     JOIN department ON role.department_id = department.id`;
      db.query(fetchQuery, (err, result) => {
          if (err) throw err;   
          else
@@ -157,7 +157,7 @@ inquirer.prompt([
     }
     ]).then((department) => {
         const departmentId = department.departmentId;
-            const fetchQuery = `SELECT id from roles where 
+            const fetchQuery = `SELECT id from role where 
             department_id=${departmentId} and title='${title}'`;
             db.query(fetchQuery, (err, result) => {        
                 if (err) throw err;   
@@ -165,12 +165,12 @@ inquirer.prompt([
                 {
                 if(result.length > 0)
                 {
-                    console.log(`roles ${title} already exists`);  
+                    console.log(`role ${title} already exists`);  
                     addRole();              
                 }
                 else
                 {    
-                    const insertQuery = `INSERT INTO roles(title,salary,department_id) 
+                    const insertQuery = `INSERT INTO role(title,salary,department_id) 
                     VALUES (?, ?, ?);`;
                     db.query(insertQuery, [title, salary, departmentId], (err, result) => {
                         if (err) throw err;   
@@ -216,7 +216,7 @@ inquirer.prompt([
     ]).then((answers) => {
      const firstName = answers.firstName;
      const lastName = answers.lastName;      
-     const fetchRoles = `SELECT id, title from roles order by title`;
+     const fetchRoles = `SELECT id, title from role order by title`;
      db.query(fetchRoles, (err, result) => {        
        if (err) throw err;   
        else
@@ -229,9 +229,9 @@ inquirer.prompt([
             message: 'What is employee\'s job title?',        
             choices: listOfRoles
         }
-        ]).then((roles) => {
-        const roleId = roles.roleId;      
-        const fetchManager = `SELECT id, first_name, last_name from employee order by 
+        ]).then((role) => {
+        const roleId = role.roleId;      
+        const fetchManager = `SELECT id, first_name, last_name from employees order by 
         first_name, last_name`;
         db.query(fetchManager, (err, result) => {        
             if (err) throw err;   
@@ -249,7 +249,7 @@ inquirer.prompt([
                     ]).then((manager) => {
                 const managerId = manager.managerId;
             
-                const insertQuery = `INSERT INTO employee(first_name,last_name,role_id,manager_id) 
+                const insertQuery = `INSERT INTO employees(first_name,last_name,role_id,manager_id) 
                 VALUES (?, ?, ?, ?);`;
                 db.query(insertQuery, [firstName, lastName, roleId, managerId], (err, result) => {
                     if (err) throw err;   
@@ -271,7 +271,7 @@ inquirer.prompt([
 
 updateEmployeeRole = () => {
      
-    const fetchEmployee = `SELECT id, first_name, last_name from employee order by first_name, last_name`;
+    const fetchEmployee = `SELECT id, first_name, last_name from employees order by first_name, last_name`;
     db.query(fetchEmployee, (err, result) => {        
         if (err) throw err;   
         else
@@ -285,8 +285,8 @@ updateEmployeeRole = () => {
                     choices: listOfEmployee
                 }
                 ]).then((employee) => {
-                    const employeeId = employee.employeeId; 
-                    const fetchRoles = `SELECT id, title from roles order by title`; 
+                    const employeeId = employees.employeeId; 
+                    const fetchRoles = `SELECT id, title from role order by title`; 
                     db.query(fetchRoles, (err, result) => {        
                         if (err) throw err;   
                         else
@@ -299,9 +299,9 @@ updateEmployeeRole = () => {
                              message: 'What is employee\'s new job title?',        
                              choices: listOfRoles
                          }
-                         ]).then((roles) => {
+                         ]).then((role) => {
                          const roleId = roles.roleId;
-                         const updateQuery = `UPDATE employee SET role_id=? where id=?`;
+                         const updateQuery = `UPDATE employees SET role_id=? where id=?`;
                          db.query(updateQuery, [roleId, employeeId], (err, result) => {
                              if (err) throw err;   
                              else {

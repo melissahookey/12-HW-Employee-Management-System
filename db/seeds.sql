@@ -1,17 +1,17 @@
 USE company_db;
 
-INSERT INTO department(names)
+INSERT INTO department(name)
 VALUES ("Finance"),
        ("HR"),
        ("IT"),       
        ("Marketing");
         
-INSERT INTO roles(title, salary, department_id)
+INSERT INTO role(title, salary, department_id)
 VALUES ("President", 100000, 4),
        ("Human Resources Officer", 65000, 1),
        ("Accountant", 75000, 1);                
 
-INSERT INTO employee(id, first_name, last_name, role_id, manager_id)
-VALUES (1, "Rebecca", "Adams", 1, 1),
-       (2, "Bob", "Pancakes", 2, 2),
-       (3, "Carol", "Williamson", 3, 0);
+INSERT INTO employees(first_name, last_name, role_id, manager_id)
+VALUES ("Rebecca", "Adams", 1, 1),
+       ("Bob", "Pancakes", 2, 2),
+       ("Carol", "Williamson", 3, NULL);
